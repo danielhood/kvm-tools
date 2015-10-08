@@ -1,0 +1,21 @@
+#!/bin/bash
+
+if [ "$1" == "" ]; then
+        echo "new hostname requierd"
+        exit 1
+fi
+
+newHostname="$1"
+
+#if [[ "$newHostname" != *"."* ]];then
+#	newHostname="$newHostname.local"
+#fi
+
+if [[ ! "$newHostname" =~ .*\..* ]]; then
+	newHostname="$newHostname.local"
+fi
+
+hostnamectl set-hostname "$newHostname"
+systemctl restart systemd-hostnamed
+dhclient -r; dhclient -4
+systemctl restart network

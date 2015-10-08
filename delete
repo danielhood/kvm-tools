@@ -1,0 +1,33 @@
+vmDir="/vm"
+
+targetVm=""
+
+while [ "$1" != "" ]; do
+	case $1 in
+		-t | --target )
+			shift
+			targetVm=$1
+			;;
+		* )
+			echo "Usage: delete.sh --target <vmName>"
+			exit 1
+	esac
+	shift
+done
+
+if [ "$targetVm" == "" ]; then 
+	echo "--target is requierd"
+	exit 1
+fi
+
+targetDir="$vmDir/$targetVm"
+
+if [ ! -d $targetDir ]; then
+	echo "target directory does not exist"
+	exit 1
+fi
+
+virsh destroy $targetVm
+virsh undefine $targetVm
+
+rm -fr "$targetDir"

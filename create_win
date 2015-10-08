@@ -1,0 +1,56 @@
+vmDir="/vm"
+vmDrive="vdisk1.img"
+
+imgDir="/img"
+
+targetVm=""
+sourceImgFile=""
+
+while [ "$1" != "" ]; do
+	case $1 in
+		-t | --target )
+			shift
+			targetVm=$1
+			;;
+		-s | --source )
+			shift
+			sourceImgFile=$1
+			;;
+		* )
+			echo "Usage: clone.sh --target <vmName> --source <imageFile>"
+			exit 1
+	esac
+	shift
+done
+
+if [ "$targetVm" == "" ]; then 
+	echo "--target is requierd"
+	exit 1
+fi
+
+if [ "$sourceImgFile" == "" ]; then
+	echo "--source is required"
+	exit 1
+fi
+
+targetDir="$vmDir/$targetVm"
+targetDrive="$targetDir/$vmDrive"
+imgFile="$imgDir/$sourceImgFile"
+
+if [ -d $targetDir ]; then
+	echo "target directory already exists"
+	exit 1
+fi
+
+if [ ! -f $imgFile ]; then
+	echo "source image does not exist"
+	exit 1
+fi
+
+mkdir "$targetDir"
+
+qemu-img create -f raw "$targetDrive" 40G
+
+virt-install --os-variant=win2k8r2 --cdrom "$imgFile" --network bridge=br0 --disk "$targetDrive",format=raw --graphics vnc,listen=0.0.0.0 --vcpus=2 --memory 1024 --boot cdrom,hd --name="$targetVm"
+
+

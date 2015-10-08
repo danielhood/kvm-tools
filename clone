@@ -1,0 +1,56 @@
+vmDir="/vm"
+vmDrive="vdisk1.img"
+
+targetVm=""
+sourceVm=""
+
+while [ "$1" != "" ]; do
+	case $1 in
+		-t | --target )
+			shift
+			targetVm=$1
+			;;
+		-s | --source )
+			shift
+			sourceVm=$1
+			;;
+		* )
+			echo "Usage: clone.sh --target <vmName> --source <vmName>"
+			exit 1
+	esac
+	shift
+done
+
+if [ "$targetVm" == "" ]; then 
+	echo "--target is requierd"
+	exit 1
+fi
+
+if [ "$sourceVm" == "" ]; then
+	echo "--source is required"
+	exit 1
+fi
+
+targetDir="$vmDir/$targetVm"
+targetDrive="$targetDir/$vmDrive"
+sourceDir="$vmDir/$sourceVm"
+sourceDrive="$sourceDir/$vmDrive"
+
+if [ -d $targetDir ]; then
+	echo "target directory already exists"
+	exit 1
+fi
+
+if [ ! -d $sourceDir ]; then
+	echo "source directory does not exist"
+	exit 1
+fi
+
+if [ ! -f $sourceDrive ]; then
+	echo "source drive image does not exist"
+	exit 1
+fi
+
+mkdir "$targetDir"
+cp $sourceDrive $targetDir
+virt-clone -o $sourceVm -n $targetVm --preserve-data -f $targetDrive
